@@ -1,8 +1,24 @@
 import React, { useState } from 'react';
 import { Handle, Position } from 'reactflow';
-export default function Switch(props): React.ReactElement {
-  const handleStyle = {};
+interface ComponentProps {
+  id: string;
+  data: object;
+  type: string;
+  xPos: number;
+  yPos: number;
+  zIndex: number;
+  selected: boolean;
+  sourcePosition: string;
+  targetPosition: string;
+  dragging: boolean;
+  isConnectable: boolean;
+  dragHandle: string;
+}
+export default function Switch(props: ComponentProps): React.ReactElement {
   const [power, setPower] = useState(false);
+  const handleStyle = {
+    background: power ? 'red' : 'black',
+  };
   const togglePower = (): void => {
     setPower((v) => !v);
   };
@@ -12,6 +28,7 @@ export default function Switch(props): React.ReactElement {
         style={{
           background: 'transparent',
           border: 'none',
+          cursor: 'pointer',
         }}
         onClick={togglePower}
       >
