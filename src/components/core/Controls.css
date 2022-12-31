@@ -1,0 +1,14 @@
+aside{
+    width: 10%;
+    border-left: 1px dashed #000000;
+    display: flex;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-direction: column;
+}
+.control{
+    border:none;
+    background: transparent;
+    margin: 10px;
+}
