@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
-import { Handle, Position } from 'reactflow';
-
-export default function Switch(): React.ReactElement {
+import React, { useState, useEffect } from 'react';
+import { Handle, Position, NodeProps } from 'reactflow';
+import SwitchData from '../types/SwitchData';
+import useUpdateNode from '../core/useUpdateNode';
+export default function Switch(props: NodeProps): React.ReactElement {
+  const updateHandler = useUpdateNode(props);
   const [power, setPower] = useState(false);
   const handleStyle = {
     background: power ? 'red' : 'black',
@@ -9,6 +11,15 @@ export default function Switch(): React.ReactElement {
   const togglePower = (): void => {
     setPower((v) => !v);
   };
+
+  useEffect(() => {
+    const newData: SwitchData = {
+      ...props.data,
+      out: power,
+    };
+    updateHandler(newData);
+  }, [power]);
+
   return (
     <>
       <button
@@ -25,7 +36,7 @@ export default function Switch(): React.ReactElement {
           alt="switch"
         />
       </button>
-      <Handle type="source" position={Position.Right} id="b" style={handleStyle} />
+      <Handle type="source" position={Position.Right} id="out" style={handleStyle} />
     </>
   );
 }

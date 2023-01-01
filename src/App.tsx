@@ -1,5 +1,5 @@
 import './App.css';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import ReactFlow, {
   Background,
   useNodesState,
@@ -11,13 +11,14 @@ import ReactFlow, {
   ReactFlowProvider,
   BackgroundVariant,
   ReactFlowInstance,
-  useKeyPress,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import Switch from './components/inputs/Switch';
 import And from './components/gates/And';
 import Controls from './components/core/Controls';
-const initialNodes = [
+import NodeData from './components/types/NodeData';
+
+const initialNodes: Node[] | any = [
   // {
   //   id: '1',
   //   position: { x: 100, y: 100 },
@@ -44,12 +45,11 @@ const nodeTypes = {
   And: And,
 };
 let id = 0;
-const getId = (): string => `dndnode_${id++}`;
+const getId = (): string => `node_${id++}`;
 
 export default function Flow(): React.ReactElement {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-  const DeletePressed = useKeyPress('Delete');
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(
     null,
   );
@@ -58,17 +58,12 @@ export default function Flow(): React.ReactElement {
   const reactFlowWrapper = useRef<HTMLInputElement>(null);
 
   const onConnect = useCallback(
-    (params: Connection) => {
-      const newEdge = {
-        ...params,
-        animated: true,
+    (edge: Connection) => {
+      const mutatedEdge = {
+        ...edge,
         type: 'smoothstep',
-        style: {
-          // stroke: 'red',
-        },
       };
-
-      setEdges((eds) => addEdge(newEdge, eds));
+      setEdges((eds) => addEdge(mutatedEdge, eds));
     },
     [setEdges],
   );
@@ -76,11 +71,14 @@ export default function Flow(): React.ReactElement {
   const onEdgeUpdateStart = useCallback(() => {
     edgeUpdateSuccessful.current = false;
   }, []);
+
   const onEdgeUpdate = useCallback((oldEdge: Edge, newConnection: Connection) => {
     edgeUpdateSuccessful.current = true;
     setEdges((els) => updateEdge(oldEdge, newConnection, els));
   }, []);
+
   const onEdgeUpdateEnd = useCallback((_: MouseEvent, edge: Edge) => {
+    console.log('edge update end');
     if (!edgeUpdateSuccessful.current) {
       setEdges((eds) => eds.filter((e) => e.id !== edge.id));
     }
@@ -109,22 +107,23 @@ export default function Flow(): React.ReactElement {
           x: event.clientX - reactFlowBounds.left,
           y: event.clientY - reactFlowBounds.top,
         });
+        const nodeData: NodeData = {
+          label: `${type} node`,
+          in: [],
+          out: [],
+        };
+
         const newNode: any = {
           id: getId(),
           type,
           position,
-          data: { label: `${type} node` },
+          data: nodeData,
         };
-
         setNodes((nds) => nds.concat(newNode));
       }
     },
     [reactFlowInstance],
   );
-
-  useEffect(() => {
-    setNodes((nds) => nds.filter((node) => node.selected == undefined));
-  }, [DeletePressed]);
 
   return (
     <div
@@ -146,9 +145,8 @@ export default function Flow(): React.ReactElement {
             onEdgeUpdate={onEdgeUpdate}
             onEdgeUpdateStart={onEdgeUpdateStart}
             onEdgeUpdateEnd={onEdgeUpdateEnd}
-            // fitView
             attributionPosition="top-right"
-            onInit={(a: any): void => setReactFlowInstance(a)}
+            onInit={(instance: ReactFlowInstance): void => setReactFlowInstance(instance)}
             onDrop={onDrop}
             onDragOver={onDragOver}
           >
