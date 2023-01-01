@@ -3,10 +3,5 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true
   },
-  "cSpell.words": [
-    "dndnode",
-    "reactflow",
-    "smoothstep",
-    "zustand"
-  ]
+  "cSpell.words": ["dndnode", "reactflow", "smoothstep", "zustand"]
 }
