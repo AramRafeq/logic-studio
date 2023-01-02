@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
-import { Handle, Position } from 'reactflow';
+import React from 'react';
+import { Handle, NodeProps, Position } from 'reactflow';
 
-export default function And(): React.ReactElement {
-  const [power, setPower] = useState(false);
-  const togglePower = (): void => {
-    setPower((v) => !v);
-  };
+export default function And(props: NodeProps): React.ReactElement {
+  const in1 = props.data.in.length > 0 ? props.data.in[0] : false;
+  const in2 = props.data.in.length > 0 ? props.data.in[1] : false;
+  const out = props.data.out.length > 0 ? props.data.out[0] : false;
   return (
     <>
       <button
@@ -14,7 +13,6 @@ export default function And(): React.ReactElement {
           border: 'none',
           cursor: 'pointer',
         }}
-        onClick={togglePower}
       >
         <img height={50} src="/images/gates/and.png" alt="And" />
       </button>
@@ -23,13 +21,13 @@ export default function And(): React.ReactElement {
         type="target"
         position={Position.Left}
         id="in-1"
-        style={{ top: 14, left: 3 }}
+        style={{ top: 14, left: 3, background: in1 ? 'red' : undefined }}
       />
       <Handle
         type="target"
         position={Position.Left}
         id="in-2"
-        style={{ top: 38, left: 3 }}
+        style={{ top: 38, left: 3, background: in2 ? 'red' : undefined }}
       />
       <Handle
         type="source"
@@ -38,6 +36,7 @@ export default function And(): React.ReactElement {
         style={{
           right: 5,
           top: 26,
+          background: out ? 'red' : undefined,
         }}
       />
     </>

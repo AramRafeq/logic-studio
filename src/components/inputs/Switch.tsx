@@ -15,7 +15,7 @@ export default function Switch(props: NodeProps): React.ReactElement {
   useEffect(() => {
     const newData: SwitchData = {
       ...props.data,
-      out: power,
+      out: [power],
     };
     updateHandler(newData);
   }, [power]);

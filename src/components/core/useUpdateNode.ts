@@ -1,10 +1,12 @@
 import { NodeProps, useReactFlow, Node, Edge } from 'reactflow';
 import NodeData from '../types/NodeData';
 import SwitchData from '../types/SwitchData';
+import useEvaluate from './useEvaluate';
 export default function useUpdateNode(props: NodeProps): {
   (arg: NodeData | SwitchData): void;
 } {
   const flowInstance = useReactFlow();
+  const evaluate = useEvaluate();
   return (data): void => {
     const nodes: Node[] = flowInstance.getNodes();
     const mutatedNodes: Node[] = nodes.map((node: Node) => {
@@ -31,19 +33,21 @@ export default function useUpdateNode(props: NodeProps): {
         }
         return shouldSelect;
       });
+      const out = data.out[0];
       const newEdges: Edge[] = filteredEdges.map((edge: Edge) => {
         const newEdge: Edge = {
           ...edge,
           style: {
-            stroke: typeof data.out === 'boolean' && data.out ? 'red' : undefined,
+            stroke: out ? 'red' : undefined,
           },
-          animated: typeof data.out === 'boolean' && data.out ? true : false,
+          animated: out ? true : false,
           type: 'smoothstep',
         };
         return newEdge;
       });
 
       flowInstance.setEdges([...otherEdges, ...newEdges]);
+      evaluate(flowInstance);
     }
   };
 }

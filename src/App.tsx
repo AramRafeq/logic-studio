@@ -11,12 +11,15 @@ import ReactFlow, {
   ReactFlowProvider,
   BackgroundVariant,
   ReactFlowInstance,
+  NodeChange,
+  EdgeChange,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import Switch from './components/inputs/Switch';
 import And from './components/gates/And';
 import Controls from './components/core/Controls';
 import NodeData from './components/types/NodeData';
+import useEvaluate from './components/core/useEvaluate';
 
 const initialNodes: Node[] | any = [
   // {
@@ -56,17 +59,7 @@ export default function Flow(): React.ReactElement {
 
   const edgeUpdateSuccessful = useRef(true);
   const reactFlowWrapper = useRef<HTMLInputElement>(null);
-
-  const onConnect = useCallback(
-    (edge: Connection) => {
-      const mutatedEdge = {
-        ...edge,
-        type: 'smoothstep',
-      };
-      setEdges((eds) => addEdge(mutatedEdge, eds));
-    },
-    [setEdges],
-  );
+  const evaluate = useEvaluate();
 
   const onEdgeUpdateStart = useCallback(() => {
     edgeUpdateSuccessful.current = false;
@@ -75,15 +68,6 @@ export default function Flow(): React.ReactElement {
   const onEdgeUpdate = useCallback((oldEdge: Edge, newConnection: Connection) => {
     edgeUpdateSuccessful.current = true;
     setEdges((els) => updateEdge(oldEdge, newConnection, els));
-  }, []);
-
-  const onEdgeUpdateEnd = useCallback((_: MouseEvent, edge: Edge) => {
-    console.log('edge update end');
-    if (!edgeUpdateSuccessful.current) {
-      setEdges((eds) => eds.filter((e) => e.id !== edge.id));
-    }
-
-    edgeUpdateSuccessful.current = true;
   }, []);
 
   const onDragOver = useCallback((event: any) => {
@@ -125,6 +109,34 @@ export default function Flow(): React.ReactElement {
     [reactFlowInstance],
   );
 
+  const onEdgeUpdateEnd = useCallback(
+    (_: MouseEvent, edge: Edge) => {
+      if (!edgeUpdateSuccessful.current) {
+        setEdges((eds) => eds.filter((e) => e.id !== edge.id));
+      }
+      edgeUpdateSuccessful.current = true;
+      evaluate(reactFlowInstance);
+    },
+    [reactFlowInstance],
+  );
+  const onConnect = useCallback(
+    (edge: Connection) => {
+      const mutatedEdge = {
+        ...edge,
+        type: 'smoothstep',
+      };
+      setEdges((eds) => addEdge(mutatedEdge, eds));
+      evaluate(reactFlowInstance);
+    },
+    [setEdges, reactFlowInstance],
+  );
+  const onNodesDelete = useCallback(() => {
+    evaluate(reactFlowInstance);
+  }, [reactFlowInstance]);
+  const onEdgesDelete = useCallback(() => {
+    evaluate(reactFlowInstance);
+  }, [reactFlowInstance]);
+
   return (
     <div
       style={{
@@ -149,6 +161,8 @@ export default function Flow(): React.ReactElement {
             onInit={(instance: ReactFlowInstance): void => setReactFlowInstance(instance)}
             onDrop={onDrop}
             onDragOver={onDragOver}
+            onNodesDelete={onNodesDelete}
+            onEdgesDelete={onEdgesDelete}
           >
             <Background variant={BackgroundVariant.Lines} />
           </ReactFlow>
