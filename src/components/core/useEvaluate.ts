@@ -1,4 +1,5 @@
 import { ReactFlowInstance, Node, Edge } from 'reactflow';
+import _ from 'lodash';
 import NodeData from '../types/NodeData';
 function debounce(
   func: { (flow: ReactFlowInstance): void },
@@ -27,43 +28,10 @@ export default function useEvaluate(): {
         const nodeAsTarget = edges?.filter((edge: Edge) => edge.target === node.id) ?? [];
         return nodeAsSource.length + nodeAsTarget.length === 0;
       }) ?? [];
-
-    let visitedNodesCount = 0;
-    const visitedEdges: string[] = [];
-    const visitedNodes: { [name: string]: Node } = {};
-
-    const inputNodes: Node[] =
-      nodes?.filter((node: Node) => InputNodes.indexOf(`${node.type}`) > -1) ?? [];
-    const layer: Node[] = inputNodes;
-    const nextLayer: Node[] = [];
-
-    while (visitedNodesCount < nodes.length - iSolatedNodes.length) {
-      for (const node of layer ?? []) {
-        if (!visitedNodes[node.id]) {
-          console.log(node);
-          visitedNodes[node.id] = node;
-        } else {
-          console.log('visited node found');
-        }
-        visitedNodesCount += 1;
-      }
-      console.log('evaluation loop');
-    }
-    // const updatedNodes: Node[] = nodes?.map((node: Node) => {
-    //   if (node.type === 'And') {
-    //     const nData: NodeData = {
-    //       ...node.data,
-    //       in: [],
-    //       out: [],
-    //     };
-    //     const mutatedNode: Node = {
-    //       ...node,
-    //       data: nData,
-    //     };
-    //     return mutatedNode;
-    //   }
-    //   return node;
-    // });
-    // console.log(nodes);
+    /* 
+      one solution is to traverse the edges and get every source and target 
+      and get ins and outs the calculate based on gate type 
+      for this needs explicit definition of inputs and outputs which later on we can scale to include n
+      */
   }, 200);
 }
