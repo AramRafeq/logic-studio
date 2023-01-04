@@ -1,9 +1,8 @@
 import { NodeProps, useReactFlow, Node, Edge } from 'reactflow';
 import NodeData from '../types/NodeData';
-import SwitchData from '../types/SwitchData';
 import useEvaluate from './useEvaluate';
 export default function useUpdateNode(props: NodeProps): {
-  (arg: NodeData | SwitchData): void;
+  (arg: NodeData): void;
 } {
   const flowInstance = useReactFlow();
   const evaluate = useEvaluate();
@@ -33,14 +32,13 @@ export default function useUpdateNode(props: NodeProps): {
         }
         return shouldSelect;
       });
-      const out = data.out[0];
       const newEdges: Edge[] = filteredEdges.map((edge: Edge) => {
         const newEdge: Edge = {
           ...edge,
           style: {
-            stroke: out ? 'red' : undefined,
+            stroke: data.out ? 'red' : undefined,
           },
-          animated: out ? true : false,
+          animated: data.out ? true : false,
           type: 'smoothstep',
         };
         return newEdge;

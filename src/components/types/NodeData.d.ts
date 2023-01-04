@@ -1,5 +1,6 @@
 export default interface NodeData {
   label: string;
-  in: boolean[];
-  out: boolean[];
+  in1: boolean;
+  in2: boolean;
+  out: boolean;
 }

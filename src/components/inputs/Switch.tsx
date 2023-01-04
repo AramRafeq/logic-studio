@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Handle, Position, NodeProps } from 'reactflow';
-import SwitchData from '../types/SwitchData';
+import NodeData from '../types/NodeData';
 import useUpdateNode from '../core/useUpdateNode';
 export default function Switch(props: NodeProps): React.ReactElement {
   const updateHandler = useUpdateNode(props);
@@ -13,9 +13,9 @@ export default function Switch(props: NodeProps): React.ReactElement {
   };
 
   useEffect(() => {
-    const newData: SwitchData = {
+    const newData: NodeData = {
       ...props.data,
-      out: [power],
+      out: power,
     };
     updateHandler(newData);
   }, [power]);

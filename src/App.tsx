@@ -93,8 +93,9 @@ export default function Flow(): React.ReactElement {
         });
         const nodeData: NodeData = {
           label: `${type} node`,
-          in: [],
-          out: [],
+          in1: false,
+          in2: false,
+          out: false,
         };
 
         const newNode: any = {
