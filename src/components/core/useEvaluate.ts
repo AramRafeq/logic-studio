@@ -27,9 +27,28 @@ export default function useEvaluate(): {
       }) ?? [];
     const edges = flowInstance?.getEdges() ?? [];
     const visitedNodes: { [name: string]: Node | undefined } = {};
+    nodes.map((node: Node) => {
+      if (InputNodes.indexOf(node.type ?? '') < 0) {
+        const newNodeData: NodeData = {
+          ...node.data,
+          in1: false,
+          in2: false,
+          out: false,
+        };
+        const newNode: Node = {
+          ...node,
+          data: newNodeData,
+        };
+        visitedNodes[node.id] = newNode;
+      } else {
+        visitedNodes[node.id] = node;
+      }
+    });
     for (const edge of edges) {
-      const targetNode: Node | undefined = flowInstance?.getNode(edge.target);
-      const sourceNode: Node | undefined = flowInstance?.getNode(edge.source);
+      const targetNode: Node | undefined = visitedNodes[edge.target];
+      const sourceNode: Node | undefined = visitedNodes[edge.source];
+      // const targetNode: Node | undefined = flowInstance?.getNode(edge.target);
+      // const sourceNode: Node | undefined = flowInstance?.getNode(edge.source);
       let calculationNode: Node | undefined = targetNode;
       if (targetNode && sourceNode) {
         if (visitedNodes[targetNode.id]) {
@@ -41,19 +60,23 @@ export default function useEvaluate(): {
 
         newTargetNodeData[`${edge.targetHandle}`] =
           sourceNode.data[`${edge.sourceHandle}`];
-        if (targetNode.type === 'And') {
-          newTargetNodeData['out'] = newTargetNodeData.in1 && newTargetNodeData.in2;
-        }
+        // if (targetNode.type === 'And') {
+        //   newTargetNodeData['out'] = newTargetNodeData.in1 && newTargetNodeData.in2;
+        // }
 
         targetNode.data = newTargetNodeData;
         visitedNodes[`${calculationNode?.id}`] = calculationNode;
       }
     }
+
     const nodeKeys: string[] = _.keys(visitedNodes);
     const updatedNodes: Node[] = [];
     nodeKeys.map((key: string) => {
       const node: Node | undefined = visitedNodes[key];
       if (node) {
+        if (node.type === 'And') {
+          node.data['out'] = node.data.in1 && node.data.in2;
+        }
         updatedNodes.push(node);
       }
       return null;
