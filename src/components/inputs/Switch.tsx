@@ -35,6 +35,8 @@ export default function Switch(props: NodeProps): React.ReactElement {
           src={power ? '/images/switch/on.jpg' : '/images/switch/off.jpg'}
           alt="switch"
         />
+        <br />
+        {props.id}
       </button>
       <Handle type="source" position={Position.Right} id="out" style={handleStyle} />
     </>

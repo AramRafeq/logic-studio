@@ -1,6 +1,5 @@
 import { ReactFlowInstance, Node, Edge } from 'reactflow';
 import _ from 'lodash';
-import NodeData from '../types/NodeData';
 function debounce(
   func: { (flow: ReactFlowInstance): void },
   timeout = 300,
@@ -15,57 +14,41 @@ function debounce(
 }
 
 const InputNodes: string[] = ['Switch'];
+
 export default function useEvaluate(): {
   (flowInstance: ReactFlowInstance | null): void;
 } {
-  //   const updateNodeHandler = useUpdateNode();
   return debounce((flowInstance: ReactFlowInstance | null) => {
     const nodes = flowInstance?.getNodes() ?? [];
-    const inputNodes: Node[] =
-      nodes.filter((node: Node) => {
-        return InputNodes.indexOf(node.type ?? '') > -1;
-      }) ?? [];
-    const edges = flowInstance?.getEdges() ?? [];
+    const edges = flowInstance?.getEdges()?.reverse() ?? [];
+    const groupedEdgesByTarget: { [name: string]: Edge[] } = _.groupBy(edges, 'target');
+    const groupedEdgesByTargetKeys = _.sortBy(_.keys(groupedEdgesByTarget), (o: string) =>
+      parseInt(o),
+    );
+    console.log(groupedEdgesByTargetKeys);
+    console.log(groupedEdgesByTarget);
     const visitedNodes: { [name: string]: Node | undefined } = {};
     nodes.map((node: Node) => {
-      if (InputNodes.indexOf(node.type ?? '') < 0) {
-        const newNodeData: NodeData = {
-          ...node.data,
-          in1: false,
-          in2: false,
-          out: false,
-        };
-        const newNode: Node = {
-          ...node,
-          data: newNodeData,
-        };
-        visitedNodes[node.id] = newNode;
-      } else {
-        visitedNodes[node.id] = node;
-      }
+      visitedNodes[node.id] = node;
     });
-    for (const edge of edges) {
-      const targetNode: Node | undefined = visitedNodes[edge.target];
-      const sourceNode: Node | undefined = visitedNodes[edge.source];
-      // const targetNode: Node | undefined = flowInstance?.getNode(edge.target);
-      // const sourceNode: Node | undefined = flowInstance?.getNode(edge.source);
-      let calculationNode: Node | undefined = targetNode;
-      if (targetNode && sourceNode) {
-        if (visitedNodes[targetNode.id]) {
-          calculationNode = visitedNodes[targetNode.id];
+
+    for (const nodeKey of groupedEdgesByTargetKeys) {
+      const groupedEdges: Edge[] = groupedEdgesByTarget[nodeKey];
+      for (const edge of edges) {
+        const targetNode: Node | undefined = visitedNodes[edge.target];
+        const sourceNode: Node | undefined = visitedNodes[edge.source];
+        if (targetNode && sourceNode) {
+          const newTargetNodeData: any = {
+            ...targetNode.data,
+          };
+          newTargetNodeData[`${edge.targetHandle}`] =
+            sourceNode.data[`${edge.sourceHandle}`];
+          if (targetNode.type === 'And') {
+            newTargetNodeData.out = newTargetNodeData.in1 && newTargetNodeData.in2;
+          }
+          targetNode.data = newTargetNodeData;
+          visitedNodes[`${targetNode?.id}`] = targetNode;
         }
-        const newTargetNodeData: any = {
-          ...targetNode.data,
-        };
-
-        newTargetNodeData[`${edge.targetHandle}`] =
-          sourceNode.data[`${edge.sourceHandle}`];
-        // if (targetNode.type === 'And') {
-        //   newTargetNodeData['out'] = newTargetNodeData.in1 && newTargetNodeData.in2;
-        // }
-
-        targetNode.data = newTargetNodeData;
-        visitedNodes[`${calculationNode?.id}`] = calculationNode;
       }
     }
 
@@ -74,14 +57,12 @@ export default function useEvaluate(): {
     nodeKeys.map((key: string) => {
       const node: Node | undefined = visitedNodes[key];
       if (node) {
-        if (node.type === 'And') {
-          node.data['out'] = node.data.in1 && node.data.in2;
-        }
         updatedNodes.push(node);
       }
       return null;
     });
-    const finalNodes: Node[] = [...updatedNodes, ...inputNodes];
+
+    const finalNodes: Node[] = [...updatedNodes];
     flowInstance?.setNodes(finalNodes);
   }, 10);
 }

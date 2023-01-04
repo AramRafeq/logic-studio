@@ -48,7 +48,8 @@ const nodeTypes = {
   And: And,
 };
 let id = 0;
-const getId = (): string => `node_${id++}`;
+// const getId = (type: string): string => `${type}_${id++}`;
+const getId = (): string => `${id++}`;
 
 export default function Flow(): React.ReactElement {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);

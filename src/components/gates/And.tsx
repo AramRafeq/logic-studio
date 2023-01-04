@@ -15,6 +15,8 @@ export default function And(props: NodeProps): React.ReactElement {
         }}
       >
         <img height={50} src="/images/gates/and.png" alt="And" />
+        <br />
+        {props.id}
       </button>
 
       <Handle
