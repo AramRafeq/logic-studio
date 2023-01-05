@@ -17,6 +17,7 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 import Switch from './components/inputs/Switch';
 import And from './components/gates/And';
+import Or from './components/gates/Or';
 import Controls from './components/core/Controls';
 import NodeData from './components/types/NodeData';
 import useEvaluate from './components/core/useEvaluate';
@@ -46,6 +47,7 @@ const initialEdges: Edge[] = [];
 const nodeTypes = {
   Switch: Switch,
   And: And,
+  Or: Or,
 };
 let id = 0;
 // const getId = (type: string): string => `${type}_${id++}`;
