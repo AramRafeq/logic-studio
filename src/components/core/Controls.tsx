@@ -36,6 +36,15 @@ export default function Controls(): React.ReactElement {
         <br />
         Or Gate
       </button>
+      <button
+        className="control"
+        onDragStart={(event: any): void => onDragStart(event, 'Not')}
+        draggable
+      >
+        <img alt="" src="/images/gates/not.png" width={80} />
+        <br />
+        Not Gate
+      </button>
     </aside>
   );
 }

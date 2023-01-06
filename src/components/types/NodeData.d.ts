@@ -3,4 +3,5 @@ export default interface NodeData {
   in1: boolean;
   in2: boolean;
   out: boolean;
+  rank?: number;
 }

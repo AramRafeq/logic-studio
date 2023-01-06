@@ -14,6 +14,19 @@ function debounce(
   };
 }
 
+function calculateNodeStates(node: Node, nodeData: NodeData, edges: Edge[]): void {
+  if (node.type === 'And') {
+    nodeData.out = nodeData.in1 && nodeData.in2;
+  }
+  if (node.type === 'Or') {
+    nodeData.out = nodeData.in1 || nodeData.in2;
+  }
+  if (node.type === 'Not') {
+    nodeData.out = !nodeData.in1;
+    const nodeEdges = edges.filter((edge: Edge) => edge.target === node.id) ?? [];
+    if (nodeEdges.length === 0) nodeData.out = false;
+  }
+}
 const InputNodes: string[] = ['Switch'];
 
 export default function useEvaluate(): {
@@ -24,10 +37,12 @@ export default function useEvaluate(): {
     const edges = flowInstance?.getEdges()?.reverse() ?? [];
 
     const visitedNodes: { [name: string]: Node | undefined } = {};
+
     nodes.map((node: Node) => {
       if (InputNodes.indexOf(node.type ?? '') < 0) {
         const newNodeData: NodeData = {
           ...node.data,
+          rank: -1,
         };
         if (node.data.in1) {
           const hasIn1Edge: Edge[] =
@@ -49,6 +64,8 @@ export default function useEvaluate(): {
         }
 
         node.data = newNodeData;
+      } else {
+        node.data.rank = 0;
       }
       visitedNodes[node.id] = node;
     });
@@ -62,12 +79,7 @@ export default function useEvaluate(): {
         };
         newTargetNodeData[`${edge.targetHandle}`] =
           sourceNode.data[`${edge.sourceHandle}`];
-        if (targetNode.type === 'And') {
-          newTargetNodeData.out = newTargetNodeData.in1 && newTargetNodeData.in2;
-        }
-        if (targetNode.type === 'Or') {
-          newTargetNodeData.out = newTargetNodeData.in1 || newTargetNodeData.in2;
-        }
+        calculateNodeStates(targetNode, newTargetNodeData, edges);
         targetNode.data = newTargetNodeData;
         visitedNodes[`${targetNode?.id}`] = targetNode;
       }
@@ -78,14 +90,19 @@ export default function useEvaluate(): {
     nodeKeys.map((key: string) => {
       const node: Node | undefined = visitedNodes[key];
       if (node) {
+        const newNodeData: NodeData = {
+          ...node.data,
+        };
+        calculateNodeStates(node, newNodeData, edges);
+        node.data = newNodeData;
         updatedNodes.push(node);
       }
       return null;
     });
 
     const finalNodes: Node[] = [...updatedNodes];
+    console.log(finalNodes);
     flowInstance?.setNodes(finalNodes);
-
     const newEdges: Edge[] = edges.map((edge: Edge) => {
       const sourceNode: Node | undefined = visitedNodes[edge.source];
       if (sourceNode) {
